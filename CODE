@@ -1,0 +1,109 @@
+# project-3import java.util.*;
+import java.io.*;
+
+class Habit {
+    String name;
+    String description;
+    String frequency;
+    List<Boolean> completionHistory;
+
+    Habit(String name, String description, String frequency) {
+        this.name = name;
+        this.description = description;
+        this.frequency = frequency;
+        this.completionHistory = new ArrayList<>();
+    }
+
+    void markCompletion(boolean completed) {
+        completionHistory.add(completed);
+    }
+
+    int getTotalDays() {
+        return completionHistory.size();
+    }
+
+    int getTotalCompletions() {
+        int count = 0;
+        for (boolean done : completionHistory) {
+            if (done) count++;
+        }
+        return count;
+    }
+
+    double getStrength() {
+        if (completionHistory.isEmpty()) return 0.0;
+        return (getTotalCompletions() / (double) getTotalDays()) * 100;
+    }
+
+    String getFeedback() {
+        double strength = getStrength();
+        if (strength >= 80) return "Great job! You're consistently keeping up with your habit.";
+        else if (strength >= 50) return "Good job! There's room for improvement.";
+        else return "Keep going! Try to be more consistent in completing your habit.";
+    }
+
+    int getStreak() {
+        int streak = 0;
+        for (int i = completionHistory.size() - 1; i >= 0; i--) {
+            if (completionHistory.get(i)) streak++;
+            else break;
+        }
+        return streak;
+    }
+}
+
+public class HabitStrengthCalculator {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("🧠 Habit Strength Calculator");
+
+        // Habit creation
+        System.out.print("Enter habit name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter habit description: ");
+        String description = scanner.nextLine();
+        System.out.print("Enter habit frequency (Daily/Weekly): ");
+        String frequency = scanner.nextLine();
+
+        Habit habit = new Habit(name, description, frequency);
+
+        // Input tracking loop
+        while (true) {
+            System.out.print("\nDid you complete the habit today? (yes/no or exit): ");
+            String input = scanner.nextLine().trim().toLowerCase();
+
+            if (input.equals("exit")) break;
+            else if (input.equals("yes")) habit.markCompletion(true);
+            else if (input.equals("no")) habit.markCompletion(false);
+            else {
+                System.out.println("❌ Invalid input. Type 'yes', 'no', or 'exit'.");
+                continue;
+            }
+
+            // Show progress
+            double strength = habit.getStrength();
+            int streak = habit.getStreak();
+
+            System.out.printf("➡️  Habit Strength: %.2f%%\n", strength);
+            System.out.println("📣 " + habit.getFeedback());
+            System.out.println("🔥 Current streak: " + streak + " day(s)");
+        }
+
+        // Optional file saving
+        try (FileWriter writer = new FileWriter("habit_data.txt")) {
+            writer.write("Habit: " + habit.name + "\n");
+            writer.write("Description: " + habit.description + "\n");
+            writer.write("Frequency: " + habit.frequency + "\n");
+            writer.write("Days Tracked: " + habit.getTotalDays() + "\n");
+            writer.write("Completions: " + habit.getTotalCompletions() + "\n");
+            writer.write(String.format("Habit Strength: %.2f%%\n", habit.getStrength()));
+            writer.write("Streak: " + habit.getStreak() + " day(s)\n");
+        } catch (IOException e) {
+            System.out.println("❌ Error saving data: " + e.getMessage());
+        }
+
+        System.out.println("💾 Habit data saved. Goodbye!");
+    }
+}
